@@ -3,55 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Passport Photo Tool</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <title>AI Passport Pro - USCIS Compliant</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
-    <div class="app-container">
+    <div class="container">
         <header>
-            <div class="logo">US Passport AI</div>
-            <div id="aiStatus" class="status-pill">Loading AI Models...</div>
+            <h1>AI Passport Photo Generator</h1>
+            <p>Upload a photo to generate a 4x6 print-ready sheet.</p>
         </header>
 
-        <main class="main-content">
-            <section class="editor-section">
-                <div class="upload-wrapper">
-                    <input type="file" id="imageInput" accept="image/*">
-                    <label for="imageInput" class="btn-main" id="uploadLabel">1. Upload Photo</label>
-                </div>
-
+        <main class="editor-grid">
+            <section class="upload-area">
+                <input type="file" id="imageInput" accept="image/*" hidden>
+                <button class="btn-primary" onclick="document.getElementById('imageInput').click()">Upload Photo</button>
                 <div class="cropper-container">
-                    <img id="imageToCrop">
-                </div>
-
-                <div class="cvs-preview-area">
-                    <h3>CVS 4x6 Print Preview</h3>
-                    <div class="canvas-frame">
-                        <canvas id="cvsPreview"></canvas>
-                    </div>
+                    <img id="imagePreview" src="" alt="">
                 </div>
             </section>
 
             <aside class="sidebar">
+                <!-- NEW: Exceptions Section -->
+                <div class="card settings-card">
+                    <h3>Exceptions</h3>
+                    <div class="toggle-group">
+                        <label><input type="checkbox" id="isInfant"> Infant (Under 2 years)</label>
+                        <p class="hint">Allows eyes closed & head tilt.</p>
+                    </div>
+                    <div class="toggle-group">
+                        <label><input type="checkbox" id="isReligious"> Religious Attire</label>
+                        <p class="hint">Ensure face is fully visible.</p>
+                    </div>
+                </div>
+
+                <!-- NEW: AI Checklist Section -->
                 <div class="card checklist-card">
-                    <h4>USCIS Requirements</h4>
+                    <h3>AI Requirements Check</h3>
                     <ul id="checklist">
                         <li id="check-face" class="pending">Face Detected</li>
-                        <li id="check-neutral" class="pending">Neutral Expression</li>
+                        <li id="check-ratio" class="pending">Head Size (50-69%)</li>
+                        <li id="check-bg" class="pending">White Background</li>
                         <li id="check-eyes" class="pending">Eyes Open</li>
+                        <li id="check-glasses" class="pending">No Sunglasses/Glasses</li>
                     </ul>
                 </div>
 
-                <div class="card download-card">
-                    <button id="downloadBtn" class="btn-download" disabled>Download 300 DPI Sheet</button>
-                    <p class="specs-text">Output: 1800x1200px (4x6 inch)</p>
+                <div class="card preview-card">
+                    <h3>4x6 Print Preview</h3>
+                    <canvas id="cvsPreview"></canvas>
+                    <button id="downloadBtn" class="btn-success" disabled>Download 4x6 Sheet</button>
                 </div>
             </aside>
         </main>
     </div>
 
-    <!-- Libraries -->
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="script.js"></script>
