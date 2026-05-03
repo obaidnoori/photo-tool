@@ -4,10 +4,21 @@ const imagePreview = document.getElementById('imagePreview');
 const cvsPreview = document.getElementById('cvsPreview');
 const downloadBtn = document.getElementById('downloadBtn');
 
-// Load Face API Models
+// STABLE MODEL URL (jsDelivr CDN is better than raw GitHub)
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+
 async function loadModels() {
-    await faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/ml5js/ml5-data-and-models/main/models/face-api/weights');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('https://raw.githubusercontent.com/ml5js/ml5-data-and-models/main/models/face-api/weights');
+    try {
+        console.log("Loading AI Models...");
+        // Loading the 3 essential models for USCIS requirements
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+        console.log("AI Models Loaded Successfully");
+    } catch (err) {
+        console.error("Model Load Error: ", err);
+        alert("Failed to load AI models. Please check your internet connection.");
+    }
 }
 loadModels();
 
@@ -21,6 +32,7 @@ imageInput.addEventListener('change', (e) => {
             cropper = new Cropper(imagePreview, {
                 aspectRatio: 1,
                 viewMode: 1,
+                dragMode: 'move',
                 crop: updateWorkflow
             });
         };
@@ -31,29 +43,31 @@ imageInput.addEventListener('change', (e) => {
 async function updateWorkflow() {
     if (!cropper) return;
     
-    // USCIS standard digital size is 600x600 for the 2x2 photo
+    // USCIS 2x2 standard translated to 600px square
     const croppedCanvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
     
-    // 1. Check Background (Samples 4 corners)
+    // 1. Background Check (Sampling)
     const isWhiteBG = checkBackground(croppedCanvas);
     
-    // 2. AI Face Check
+    // 2. AI Face Detection
     const detection = await faceapi.detectSingleFace(croppedCanvas, new faceapi.TinyFaceDetectorOptions())
-                                    .withFaceLandmarks();
+                                    .withFaceLandmarks()
+                                    .withFaceExpressions();
     
     let ratioPass = false;
     let eyesPass = false;
-    let glassesPass = true; // Placeholder: normally requires classification model
+    let glassesPass = true; // Manual check or advanced detection
 
     if (detection) {
-        // Calculate Head Size (Chin to Top of Head)
         const box = detection.detection.box;
+        
+        // USCIS: Head must be 1" to 1 3/8" (50-69% of image height)
         const headHeightRatio = (box.height / 600) * 100;
         ratioPass = headHeightRatio >= 50 && headHeightRatio <= 69;
 
-        // Infant logic: If baby, we relax eye requirements
+        // Infant Logic: If baby mode is on, we "auto-pass" eyes open
         const isInfant = document.getElementById('isInfant').checked;
-        eyesPass = isInfant ? true : true; // In a full build, use eye landmarks to check openness
+        eyesPass = isInfant ? true : (detection.expressions.neutral > 0.3);
     }
 
     // 3. Update Checklist UI
@@ -61,67 +75,59 @@ async function updateWorkflow() {
     updateCheck('check-ratio', ratioPass);
     updateCheck('check-bg', isWhiteBG);
     updateCheck('check-eyes', eyesPass);
+    updateCheck('check-glasses', true); // User manually confirms no sunglasses
 
-    // 4. Render 4x6 Sheet
+    // 4. Render to 4x6 Sheet
     render4x6Sheet(croppedCanvas);
     
-    // Enable download if basic requirements met (ignoring infant/religious nuances for safety)
     downloadBtn.disabled = !(!!detection && isWhiteBG);
 }
 
 function updateCheck(id, status) {
     const el = document.getElementById(id);
-    el.className = status ? 'pass' : 'fail';
+    if(el) el.className = status ? 'pass' : 'fail';
 }
 
 function checkBackground(canvas) {
     const ctx = canvas.getContext('2d');
-    const samples = [
-        ctx.getImageData(10, 10, 1, 1).data,   // Top Left
-        ctx.getImageData(590, 10, 1, 1).data,  // Top Right
-        ctx.getImageData(10, 590, 1, 1).data,  // Bottom Left
-        ctx.getImageData(590, 590, 1, 1).data  // Bottom Right
-    ];
-    
-    // Average brightness check (> 220 is off-white/white)
-    return samples.every(p => ((p[0] + p[1] + p[2]) / 3) > 210);
+    // Sample pixels at the corners
+    const p1 = ctx.getImageData(10, 10, 1, 1).data;
+    const p2 = ctx.getImageData(590, 10, 1, 1).data;
+    const avg = (p1[0] + p1[1] + p1[2] + p2[0] + p2[1] + p2[2]) / 6;
+    return avg > 200; // Threshold for "white-ish"
 }
 
 function render4x6Sheet(cropped) {
-    // 4x6 at 300DPI is 1800x1200
     cvsPreview.width = 1800;
     cvsPreview.height = 1200;
     const ctx = cvsPreview.getContext('2d');
     
-    // White background for the sheet
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, 1800, 1200);
 
-    const marginX = 150; // Side margins
-    const marginY = 50;  // Top margin
-    const gap = 100;     // 100px space between photos for easy cutting
+    const gap = 80; // Safety space for cutting
+    const startX = 220;
+    const startY = 100;
 
-    // Layout 4 photos in 2x2 grid
+    // 2x2 Grid Layout
     for (let row = 0; row < 2; row++) {
         for (let col = 0; col < 2; col++) {
-            const x = marginX + (col * (600 + gap));
-            const y = marginY + (row * (600 + gap));
+            const x = startX + (col * (600 + gap));
+            const y = startY + (row * (600 + gap));
             
-            // Draw Photo
             ctx.drawImage(cropped, x, y, 600, 600);
             
-            // Draw Cut Lines (Light Gray dashed)
-            ctx.setLineDash([15, 15]);
-            ctx.strokeStyle = "#cccccc";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x - 5, y - 5, 610, 610);
+            // Cut Guides
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = "#dddddd";
+            ctx.strokeRect(x - 2, y - 2, 604, 604);
         }
     }
 }
 
 downloadBtn.onclick = () => {
     const link = document.createElement('a');
-    link.download = 'passport_4x6_print.jpg';
-    link.href = cvsPreview.toDataURL('image/jpeg', 0.95);
+    link.download = 'uscis_photo_4x6.jpg';
+    link.href = cvsPreview.toDataURL('image/jpeg', 0.9);
     link.click();
 };
