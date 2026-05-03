@@ -3,57 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Passport Pro - USCIS Validated</title>
+    <title>USCIS Passport AI - Strict Validator</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>US Passport AI Assistant</h1>
-            <div id="aiStatus" class="status-pill">Loading AI Models...</div>
+            <h1>Passport AI Validator</h1>
+            <div id="aiStatus" class="status-pill">Initializing AI...</div>
         </header>
 
         <main class="editor-grid">
             <section class="upload-area">
                 <div class="actions">
                     <input type="file" id="imageInput" accept="image/*" hidden>
-                    <button class="btn-primary" onclick="document.getElementById('imageInput').click()">Select Photo</button>
-                    <button class="btn-secondary" id="zoomIn">Zoom +</button>
-                    <button class="btn-secondary" id="zoomOut">Zoom -</button>
+                    <button class="btn-primary" onclick="document.getElementById('imageInput').click()">Upload Photo</button>
+                    <button class="btn-secondary" id="zoomIn">＋</button>
+                    <button class="btn-secondary" id="zoomOut">－</button>
                 </div>
                 
                 <div class="cropper-container">
                     <img id="imagePreview">
-                    <!-- The Visual Guide Overlay -->
                     <div id="guideOverlay" class="guide-overlay">
-                        <div class="head-circle"></div>
-                        <div class="chin-line"></div>
+                        <div class="head-stencil"></div>
                     </div>
                 </div>
             </section>
 
             <aside class="sidebar">
                 <div class="card checklist-card">
-                    <h3>USCIS Validation</h3>
+                    <h3>Compliance Checklist</h3>
                     <ul id="checklist">
-                        <li id="check-face" class="pending">Face Detected & Forward</li>
-                        <li id="check-ratio" class="pending">Head Size (1" - 1 3/8")</li>
-                        <li id="check-color" class="pending">Color Photo (No B&W)</li>
+                        <li id="check-face" class="pending">Looking Straight Ahead</li>
+                        <li id="check-ratio" class="pending">Proper Head Size</li>
+                        <li id="check-color" class="pending">Full Color Photo</li>
                         <li id="check-bg" class="pending">White Background</li>
-                        <li id="check-headgear" class="pending">No Hat/Headgear</li>
                     </ul>
-                </div>
-
-                <div class="card settings-card">
-                    <label><input type="checkbox" id="isInfant"> Infant (Under 2)</label><br>
-                    <label><input type="checkbox" id="isReligious"> Religious Attire</label>
+                    <p class="disclaimer">Download is disabled until all items are ✅</p>
                 </div>
 
                 <div class="card preview-card">
                     <h3>4x6 Print Sheet</h3>
                     <canvas id="cvsPreview"></canvas>
-                    <button id="downloadBtn" class="btn-success" disabled>Download 4x6 Sheet</button>
+                    <button id="downloadBtn" class="btn-success" disabled>Download Ready Sheet</button>
                 </div>
             </aside>
         </main>
