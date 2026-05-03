@@ -1,29 +1,29 @@
 :root { --uscis: #002868; --red: #d32f2f; --green: #2e7d32; }
-body { font-family: 'Inter', sans-serif; background: #f4f7f9; margin: 0; }
-.container { max-width: 1200px; margin: 15px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-.editor-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
+.container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+.editor-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
 
-.cropper-container { position: relative; height: 500px; background: #000; border-radius: 8px; overflow: hidden; }
+.cropper-container { position: relative; height: 600px; background: #000; border-radius: 8px; overflow: hidden; }
 .guide-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: none; }
+
+/* Fixed Stencil */
 .head-stencil { 
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 250px; height: 340px; border: 2px dashed rgba(255,255,255,0.7); border-radius: 50% 50% 45% 45%;
-    box-shadow: 0 0 0 2000px rgba(0,0,0,0.4); 
+    width: 260px; height: 350px; border: 2px solid #00ff00; border-radius: 50% 50% 45% 45%;
+    box-shadow: 0 0 0 2000px rgba(0,0,0,0.6); 
 }
+.eye-line { position: absolute; top: 45%; width: 100%; border-top: 1px dashed #00ff00; }
 
-.card { background: white; border: 1px solid #e1e4e8; padding: 15px; border-radius: 8px; margin-bottom: 12px; }
-#checklist li { padding: 6px 0; font-size: 0.8rem; border-bottom: 1px solid #f6f8fa; color: #586069; }
-#checklist li.passed { color: var(--green); font-weight: bold; }
-#checklist li.failed { color: var(--red); font-weight: bold; }
+.card { background: #fff; border: 1px solid #e1e4e8; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+#checklist li { padding: 8px 0; font-size: 0.85rem; border-bottom: 1px solid #f0f2f5; }
+.passed { color: var(--green); font-weight: bold; }
+.failed { color: var(--red); font-weight: bold; }
 
-/* Fixed Preview Scaling */
-.canvas-wrapper { width: 100%; overflow: hidden; border: 1px solid #d1d5da; border-radius: 4px; background: #eee; }
-#cvsPreview { width: 100%; height: auto; display: block; }
+/* Full Preview Fix */
+.canvas-container { width: 100%; background: #ccc; border-radius: 4px; overflow: hidden; padding: 5px; }
+#cvsPreview { width: 100%; height: auto; display: block; background: white; }
 
-.actions { margin-bottom: 10px; display: flex; gap: 10px; }
-.btn-primary { background: var(--uscis); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 2; font-weight: bold; }
-.btn-secondary { background: white; border: 1px solid #d1d5da; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-.btn-success { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-.btn-success:disabled { background: #eaedf0; color: #959da5; cursor: not-allowed; }
-
-.status-pill { font-size: 0.7rem; background: #e1e4e8; padding: 4px 10px; border-radius: 10px; }
+.btn-primary { background: var(--uscis); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: bold; }
+.btn-secondary { background: white; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+.btn-success { width: 100%; padding: 15px; background: var(--green); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-success:disabled { background: #eee; color: #999; cursor: not-allowed; }
