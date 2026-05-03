@@ -3,44 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Passport Photo Tool</title>
+    <title>AI Passport Photo - CVS 4x6 Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>US Passport Photo AI</h1>
-        <div id="aiStatus" class="status-box">Loading AI Models...</div>
+    <div class="app-container">
+        <header>
+            <div class="logo">US Passport AI <span>Open Source</span></div>
+            <div id="aiStatus" class="status-pill">Initializing AI...</div>
+        </header>
 
-        <div class="upload-section">
-            <input type="file" id="imageInput" accept="image/*" disabled>
-            <label for="imageInput" class="btn">Upload Photo</label>
-        </div>
+        <main class="main-content">
+            <!-- Left Side: Interactive Editor -->
+            <section class="editor-section">
+                <div class="upload-wrapper">
+                    <input type="file" id="imageInput" accept="image/*" disabled>
+                    <label for="imageInput" class="btn-main">1. Upload Photo</label>
+                </div>
 
-        <div id="validationResults" class="validation-grid"></div>
+                <div class="cropper-container">
+                    <img id="imageToCrop">
+                </div>
 
-        <div class="editor-wrap">
-            <img id="imageToCrop" style="display:none;">
-        </div>
+                <div class="cvs-preview-area">
+                    <h3>CVS 4x6 Print Preview (Real-time)</h3>
+                    <div class="canvas-frame">
+                        <canvas id="cvsPreview"></canvas>
+                    </div>
+                </div>
+            </section>
 
-        <div class="controls" id="controls" style="display:none;">
-            <button id="generateBtn" class="btn primary">Generate 300 DPI Print Sheet</button>
-        </div>
+            <!-- Right Side: Requirements & Download -->
+            <aside class="sidebar">
+                <div class="card checklist-card">
+                    <h4>USCIS Requirements</h4>
+                    <ul id="checklist">
+                        <li id="check-face" class="pending">Face Detected</li>
+                        <li id="check-neutral" class="pending">Neutral Expression</li>
+                        <li id="check-eyes" class="pending">Eyes Open</li>
+                        <li id="check-glasses" class="info">No Glasses / Uniforms</li>
+                        <li id="check-bg" class="info">White Background</li>
+                    </ul>
+                </div>
 
-        <div class="requirements-list">
-            <h4>USCIS Requirements Check:</h4>
-            <ul>
-                <li>2x2 inches (51x51mm)</li>
-                <li>White/Off-white background</li>
-                <li>Neutral expression (No "awkward" faces)</li>
-                <li>Eyes open and visible</li>
-                <li>No glasses or headgear</li>
-            </ul>
-        </div>
+                <div class="card download-card">
+                    <button id="downloadBtn" class="btn-download" disabled>Download 300 DPI Sheet</button>
+                    <p class="specs-text">Output: 1800x1200px (4x6 inch)</p>
+                </div>
+
+                <div class="privacy-card">
+                    <p>🔒 <strong>Privacy:</strong> All processing happens in your browser. No data leaves your device.</p>
+                </div>
+            </aside>
+        </main>
     </div>
 
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-    <!-- Face API Library -->
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="script.js"></script>
 </body>
