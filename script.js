@@ -26,13 +26,12 @@ imageInput.addEventListener('change', (e) => {
             cropper = new Cropper(imagePreview, {
                 aspectRatio: 1,
                 viewMode: 1,
-                dragMode: 'move', // FIXED: Allows moving photo behind stencil
-                autoCropArea: 0.8,
+                dragMode: 'move',
                 ready: () => {
                     guideOverlay.style.display = 'block';
                     updateWorkflow();
                 },
-                crop: updateWorkflow // Trigger on move/zoom
+                crop: updateWorkflow 
             });
         };
         reader.readAsDataURL(file);
@@ -42,61 +41,74 @@ imageInput.addEventListener('change', (e) => {
 async function updateWorkflow() {
     if (!cropper) return;
     const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
-    if (!canvas || canvas.width === 0) return;
+    if (!canvas) return;
 
-    // Fix Console Warning: willReadFrequently
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    render4x6(canvas); // Unlocked live preview
 
-    // Always render preview even if requirements fail
-    render4x6(canvas);
+    // 1. Quality Check (Resolution + Sharpness)
+    const isSharp = checkSharpness(ctx);
+    const isGoodRes = imagePreview.naturalWidth >= 600;
 
+    // 2. Color & Background
     const isColor = checkColor(ctx);
     const isWhiteBG = checkBackground(ctx);
-    const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
 
-    let ratioPass = false, posePass = false, headgearPass = true;
+    // 3. AI Analysis
+    const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+    
+    let posePass = false, ratioPass = false;
+    const isInfant = document.getElementById('isInfant').checked;
+    const isReligious = document.getElementById('isReligious').checked;
 
     if (detection) {
-        const landmarks = detection.landmarks;
         const box = detection.detection.box;
-        
+        const landmarks = detection.landmarks;
+
         // Ratio Check
         ratioPass = (box.height >= 300 && box.height <= 414);
 
-        // Pose Check
+        // Pose Check (Symmetry) - Skipped for Infants
         const nose = landmarks.getNose()[0].x;
         const leftEye = landmarks.getLeftEye()[0].x;
         const rightEye = landmarks.getRightEye()[3].x;
-        posePass = Math.abs((nose - leftEye) - (rightEye - nose)) < 15;
-
-        // Headgear logic: Simple landmark check for forehead occlusion
-        const foreheadY = landmarks.getJawOutline()[0].y;
-        headgearPass = document.getElementById('isReligious').checked || box.y < foreheadY;
+        const symmetry = Math.abs((nose - leftEye) - (rightEye - nose));
+        
+        // Pose pass if symmetry < 15 or if it's an infant
+        posePass = isInfant || (symmetry < 15);
     }
 
-    const isInfant = document.getElementById('isInfant').checked;
-
-    updateUI('check-face', detection && (posePass || isInfant));
+    updateUI('check-face', isInfant || (detection && posePass));
     updateUI('check-ratio', ratioPass);
     updateUI('check-color', isColor);
     updateUI('check-bg', isWhiteBG);
-    updateUI('check-headgear', headgearPass);
+    updateUI('check-quality', isSharp && isGoodRes);
 
-    // Lock Download until all green
-    downloadBtn.disabled = !(detection && ratioPass && isColor && isWhiteBG && headgearPass && (posePass || isInfant));
+    // Final Approval Logic
+    const ready = (isInfant || (detection && posePass)) && ratioPass && isColor && isWhiteBG && isSharp;
+    downloadBtn.disabled = !ready;
+}
+
+function checkSharpness(ctx) {
+    const data = ctx.getImageData(200, 200, 200, 200).data;
+    let diff = 0;
+    for (let i = 0; i < data.length - 4; i += 4) {
+        diff += Math.abs(data[i] - data[i+4]);
+    }
+    return diff > 50000; // Basic laplacian-style edge intensity check
 }
 
 function checkColor(ctx) {
     const d = ctx.getImageData(250, 250, 100, 100).data;
     for (let i = 0; i < d.length; i += 4) {
-        if (Math.abs(d[i]-d[i+1]) > 20 || Math.abs(d[i]-d[i+2]) > 20) return true;
+        if (Math.abs(d[i]-d[i+1]) > 15) return true;
     }
     return false;
 }
 
 function checkBackground(ctx) {
-    const s = [ctx.getImageData(10,10,1,1).data, ctx.getImageData(580,10,1,1).data];
-    return s.every(p => p[0] > 200 && p[1] > 200 && p[2] > 200);
+    const corners = [ctx.getImageData(10,10,1,1).data, ctx.getImageData(580,10,1,1).data];
+    return corners.every(p => p[0] > 190 && p[1] > 190 && p[2] > 190);
 }
 
 function updateUI(id, pass) {
@@ -109,19 +121,23 @@ function render4x6(img) {
     cvsPreview.width = 1800; cvsPreview.height = 1200;
     const ctx = cvsPreview.getContext('2d');
     ctx.fillStyle = "white"; ctx.fillRect(0,0,1800,1200);
-    const gap = 80;
+    const gap = 60;
+    const startX = 280;
+    const startY = 40;
+
     for(let r=0; r<2; r++){
         for(let c=0; c<2; c++){
-            ctx.drawImage(img, 250 + (c*(600+gap)), 50 + (r*(600+gap)), 600, 600);
+            ctx.drawImage(img, startX + (c*(600+gap)), startY + (r*(600+gap)), 600, 600);
         }
     }
 }
 
 document.getElementById('zoomIn').onclick = () => cropper.zoom(0.1);
 document.getElementById('zoomOut').onclick = () => cropper.zoom(-0.1);
+
 downloadBtn.onclick = () => {
     const link = document.createElement('a');
-    link.download = 'passport_sheet.jpg';
-    link.href = cvsPreview.toDataURL('image/jpeg', 0.95);
+    link.download = 'passport_4x6_sheet.jpg';
+    link.href = cvsPreview.toDataURL('image/jpeg', 0.98);
     link.click();
 };
