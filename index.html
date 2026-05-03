@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USCIS Passport Assistant</title>
+    <title>USCIS Passport Assistant Pro</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Passport Photo Assistant</h1>
-            <div id="aiStatus" class="status-pill">System Initializing...</div>
+            <h1>Passport Photo AI Validator</h1>
+            <div id="aiStatus" class="status-pill">Loading AI...</div>
         </header>
 
         <main class="editor-grid">
@@ -19,14 +19,17 @@
                 <div class="actions">
                     <input type="file" id="imageInput" accept="image/*" hidden>
                     <button class="btn-primary" onclick="document.getElementById('imageInput').click()">Upload Photo</button>
-                    <button class="btn-secondary" id="zoomIn">＋</button>
-                    <button class="btn-secondary" id="zoomOut">－</button>
+                    <button class="btn-secondary" id="zoomIn">＋ Zoom</button>
+                    <button class="btn-secondary" id="zoomOut">－ Zoom</button>
                 </div>
                 
                 <div class="cropper-container">
                     <img id="imagePreview">
+                    <!-- The stencil is now the ONLY thing visible over the photo -->
                     <div id="guideOverlay" class="guide-overlay">
-                        <div class="head-stencil"></div>
+                        <div class="head-stencil">
+                            <div class="eye-line"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -34,27 +37,27 @@
             <aside class="sidebar">
                 <div class="card settings-card">
                     <h3>Exemptions</h3>
-                    <label><input type="checkbox" id="isInfant" onchange="updateWorkflow()"> Infant (Under 2yr)</label><br>
-                    <label><input type="checkbox" id="isReligious" onchange="updateWorkflow()"> Religious Attire</label>
+                    <label><input type="checkbox" id="isInfant"> Infant (Bypasses Pose)</label><br>
+                    <label><input type="checkbox" id="isReligious"> Religious (Allows Headscarf)</label>
                 </div>
 
                 <div class="card checklist-card">
-                    <h3>Requirement Check</h3>
+                    <h3>Strict AI Validation</h3>
                     <ul id="checklist">
-                        <li id="check-face" class="pending">Face Forward / Pose</li>
-                        <li id="check-ratio" class="pending">Head Size (50-69%)</li>
-                        <li id="check-color" class="pending">Full Color</li>
-                        <li id="check-bg" class="pending">White Background</li>
-                        <li id="check-quality" class="pending">Image Quality (Blur/Res)</li>
+                        <li id="check-face" class="pending">Face Level & Straight</li>
+                        <li id="check-headgear" class="pending">No Hats / Headgear</li>
+                        <li id="check-ratio" class="pending">Head Size (1" - 1 3/8")</li>
+                        <li id="check-bg" class="pending">Plain White Background</li>
+                        <li id="check-quality" class="pending">Sharpness & No Hands</li>
                     </ul>
                 </div>
 
                 <div class="card preview-card">
-                    <h3>4x6 Print Sheet</h3>
-                    <div class="canvas-wrapper">
+                    <h3>4x6 Print Sheet (Full View)</h3>
+                    <div class="canvas-container">
                         <canvas id="cvsPreview"></canvas>
                     </div>
-                    <button id="downloadBtn" class="btn-success" disabled>Download Print Sheet</button>
+                    <button id="downloadBtn" class="btn-success" disabled>Download 4x6 Sheet</button>
                 </div>
             </aside>
         </main>
