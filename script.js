@@ -1,54 +1,9 @@
-const imageInput = document.getElementById('imageInput');
-const generateBtn = document.getElementById('generateBtn');
-const canvas = document.createElement('canvas'); // Hidden canvas for tiling
-
-// Constants for 4x6 sheet at 300 DPI
-const DPI = 300;
-const PHOTO_SIZE = 2 * DPI; // 600px
-const SHEET_W = 6 * DPI;    // 1800px
-const SHEET_H = 4 * DPI;    // 1200px
-
-let userImage = new Image();
-
-imageInput.addEventListener('change', (e) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        userImage.src = event.target.result;
-    };
-    reader.readAsDataURL(e.target.files[0]);
-});
-
-generateBtn.addEventListener('click', () => {
-    if (!userImage.src) return alert("Please select a photo first!");
-
-    // Set high-res canvas dimensions
-    canvas.width = SHEET_W;
-    canvas.height = SHEET_H;
-    const ctx = canvas.getContext('2d');
-
-    // Fill background white
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, SHEET_W, SHEET_H);
-
-    // Grid layout for 6 photos (3 columns, 2 rows)
-    for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < 3; col++) {
-            const x = col * PHOTO_SIZE;
-            const y = row * PHOTO_SIZE;
-            
-            // Draw the 2x2 photo
-            ctx.drawImage(userImage, x, y, PHOTO_SIZE, PHOTO_SIZE);
-            
-            // Draw very faint cut-lines
-            ctx.strokeStyle = "#eeeeee";
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, PHOTO_SIZE, PHOTO_SIZE);
-        }
-    }
-
-    // Download as High-Quality JPEG
-    const link = document.createElement('a');
-    link.download = 'passport_4x6_ready_to_print.jpg';
-    link.href = canvas.toDataURL('image/jpeg', 1.0);
-    link.click();
-});
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; display: flex; justify-content: center; padding: 20px; }
+.container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 700px; text-align: center; }
+.status-box { padding: 10px; margin-bottom: 20px; background: #fff3cd; border-radius: 5px; font-weight: bold; }
+.validation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; text-align: left; font-size: 14px; }
+.valid { color: green; } .invalid { color: red; font-weight: bold; }
+.editor-wrap { margin: 20px 0; border: 1px solid #ddd; background: #000; min-height: 300px; }
+.btn { background: #004a99; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+.btn:disabled { background: #ccc; cursor: not-allowed; }
+.requirements-list { margin-top: 30px; text-align: left; padding: 15px; background: #f1f1f1; border-radius: 8px; }
