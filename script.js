@@ -7,16 +7,17 @@ const guideOverlay = document.getElementById('guideOverlay');
 
 const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
 
-async function initAI() {
+// Fix: willReadFrequently warning and async initialization
+async function init() {
     try {
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        document.getElementById('aiStatus').innerText = "AI System Ready";
+        document.getElementById('aiStatus').innerText = "AI System Active";
     } catch (e) {
-        document.getElementById('aiStatus').innerText = "AI Offline - Check Connection";
+        document.getElementById('aiStatus').innerText = "AI Offline";
     }
 }
-initAI();
+init();
 
 imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -28,6 +29,7 @@ imageInput.addEventListener('change', (e) => {
             cropper = new Cropper(imagePreview, {
                 aspectRatio: 1,
                 viewMode: 1,
+                dragMode: 'move', // Allows user to move photo within stencil
                 ready: () => {
                     guideOverlay.style.display = 'block';
                     updateWorkflow();
@@ -43,20 +45,20 @@ imageInput.addEventListener('change', (e) => {
 async function updateWorkflow() {
     if (!cropper) return;
     
-    // Fix for the 0 width/height error: Ensure canvas exists
+    // Console Fix: Prevent drawing empty/zero canvas
     const croppedCanvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
     if (!croppedCanvas || croppedCanvas.width === 0) return;
 
-    // Optimization: willReadFrequently
+    // Performance Fix: willReadFrequently
     const ctx = croppedCanvas.getContext('2d', { willReadFrequently: true });
 
-    // 1. Color Check (Reject B&W)
+    // 1. Color vs B&W Detection
     const isColor = checkColor(ctx);
     
-    // 2. Background Check
+    // 2. Background Whiteness Check
     const isWhiteBG = checkBackground(ctx);
     
-    // 3. AI Analysis
+    // 3. AI Facial Analysis
     const detection = await faceapi.detectSingleFace(croppedCanvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
     
     let ratioPass = false;
@@ -66,7 +68,7 @@ async function updateWorkflow() {
         const landmarks = detection.landmarks;
         const box = detection.detection.box;
 
-        // USCIS: Head height must be 50-69% of image height
+        // Head Ratio Check (50% to 69% of height)
         const headH = box.height;
         ratioPass = (headH >= 300 && headH <= 414);
 
@@ -76,20 +78,25 @@ async function updateWorkflow() {
         const rightEye = landmarks.getRightEye()[3].x;
         const distL = nose - leftEye;
         const distR = rightEye - nose;
-        const symmetryError = Math.abs(distL - distR);
-        posePass = symmetryError < 15; // Strict threshold for "Looking Straight"
+        const symmetry = Math.abs(distL - distR);
+        
+        // Religious toggle relaxes specific facial detection but keeps pose strict
+        const isReligious = document.getElementById('isReligious').checked;
+        posePass = symmetry < 14; 
     }
 
-    // Update Checklist UI
-    updateUI('check-face', detection && posePass);
+    // Infant Mode: Auto-passes specific AI checks if checked
+    const isInfant = document.getElementById('isInfant').checked;
+    
+    updateUI('check-face', (detection && posePass) || (isInfant && detection));
     updateUI('check-ratio', ratioPass);
     updateUI('check-color', isColor);
     updateUI('check-bg', isWhiteBG);
 
-    // MASTER LOCK: Only enable download if ALL are true
-    const allPassed = (!!detection && posePass && ratioPass && isColor && isWhiteBG);
+    // MASTER LOCK: Enable download only if all requirements met
+    const allValid = (detection && ratioPass && isColor && isWhiteBG && (posePass || isInfant));
     
-    if (allPassed) {
+    if (allValid) {
         render4x6(croppedCanvas);
         downloadBtn.disabled = false;
     } else {
@@ -101,49 +108,53 @@ function checkColor(ctx) {
     const data = ctx.getImageData(250, 250, 100, 100).data;
     for (let i = 0; i < data.length; i += 4) {
         const r = data[i], g = data[i+1], b = data[i+2];
-        if (Math.abs(r - g) > 18 || Math.abs(r - b) > 18) return true;
+        if (Math.abs(r - g) > 20 || Math.abs(r - b) > 20) return true;
     }
     return false;
 }
 
 function checkBackground(ctx) {
-    const samples = [
-        ctx.getImageData(10, 10, 1, 1).data,
-        ctx.getImageData(580, 10, 1, 1).data
-    ];
-    return samples.every(s => s[0] > 190 && s[1] > 190 && s[2] > 190);
+    const p1 = ctx.getImageData(10, 10, 1, 1).data;
+    const p2 = ctx.getImageData(580, 10, 1, 1).data;
+    // USCIS requires white or off-white. Threshold set to 200.
+    return (p1[0] > 200 && p1[1] > 200 && p1[2] > 200 && p2[0] > 200);
 }
 
 function updateUI(id, pass) {
     const el = document.getElementById(id);
     el.className = pass ? 'passed' : 'failed';
-    const text = el.innerText.replace('✅ ', '').replace('❌ ', '');
-    el.innerText = (pass ? '✅ ' : '❌ ') + text;
+    const cleanText = el.innerText.replace('✅ ', '').replace('❌ ', '');
+    el.innerText = (pass ? '✅ ' : '❌ ') + cleanText;
 }
 
 function render4x6(cropped) {
+    // 4x6 at 300DPI is 1800x1200
     cvsPreview.width = 1800; cvsPreview.height = 1200;
     const ctx = cvsPreview.getContext('2d');
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, 1800, 1200);
 
-    // Layout with 80px gutter
+    const marginX = 250; 
+    const marginY = 50;
     const gap = 80;
+
+    // Correct Grid Layout for 4 photos on a 4x6
     for (let r = 0; r < 2; r++) {
         for (let c = 0; c < 2; c++) {
-            const x = 250 + (c * (600 + gap));
-            const y = 50 + (r * (600 + gap));
+            const x = marginX + (c * (600 + gap));
+            const y = marginY + (r * (600 + gap));
             ctx.drawImage(cropped, x, y, 600, 600);
         }
     }
 }
 
+// Manual Controls
 document.getElementById('zoomIn').onclick = () => cropper.zoom(0.1);
 document.getElementById('zoomOut').onclick = () => cropper.zoom(-0.1);
 
 downloadBtn.onclick = () => {
     const link = document.createElement('a');
-    link.download = 'uscis_compliant_4x6.jpg';
-    link.href = cvsPreview.toDataURL('image/jpeg', 0.95);
+    link.download = 'uscis_passport_4x6_ready.jpg';
+    link.href = cvsPreview.toDataURL('image/jpeg', 0.98);
     link.click();
 };
