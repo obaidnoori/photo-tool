@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Source Passport Photo Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>US Passport Photo Creator</h2>
+        <p>4x6 Standard Print (6 Photos per sheet)</p>
+        
+        <div class="upload-section">
+            <input type="file" id="imageInput" accept="image/*">
+            <label for="imageInput" class="btn">Select Your Photo</label>
+        </div>
+
+        <div class="preview-container">
+            <canvas id="editorCanvas"></canvas>
+            <div id="overlay" class="passport-guide"></div>
+        </div>
+
+        <div class="controls">
+            <button id="generateBtn" class="btn primary">Generate 4x6 Print Sheet</button>
+        </div>
+        
+        <p class="privacy-note">Privacy: All processing happens in your browser. No data is sent to our servers.</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
