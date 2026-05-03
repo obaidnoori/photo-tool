@@ -1,110 +1,24 @@
-let cropper;
-const imageInput = document.getElementById('imageInput');
-const imageToCrop = document.getElementById('imageToCrop');
-const aiStatus = document.getElementById('aiStatus');
-const validationResults = document.getElementById('validationResults');
+:root { --navy: #002868; --red: #bf0a30; --green: #28a745; --gray: #6c757d; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; margin: 0; color: #333; }
+.app-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 3px solid var(--navy); }
+.logo { font-size: 24px; font-weight: 800; color: var(--navy); }
+.logo span { font-weight: 300; font-size: 14px; color: var(--red); }
+.status-pill { background: #ffeeba; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 
-// DPI Standards for High Quality
-const DPI = 300;
-const PHOTO_SIZE = 2 * DPI; // 600px
-const SHEET_W = 6 * DPI;    // 1800px
-const SHEET_H = 4 * DPI;    // 1200px
+.main-content { display: grid; grid-template-columns: 1fr 360px; gap: 30px; margin-top: 25px; }
+.cropper-container { background: #222; border-radius: 12px; height: 450px; overflow: hidden; margin: 20px 0; }
+.cvs-preview-area { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
+.canvas-frame { background: #eee; padding: 10px; border-radius: 8px; text-align: center; }
+#cvsPreview { max-width: 100%; height: auto; border: 1px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-// Load AI Models from CDN
-async function loadModels() {
-    const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
-    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
-    aiStatus.innerText = "AI Models Ready. Please upload photo.";
-    aiStatus.style.background = "#d4edda";
-    imageInput.disabled = false;
-}
-loadModels();
+.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+#checklist li { list-style: none; padding: 12px 0 12px 35px; border-bottom: 1px solid #f0f0f0; position: relative; font-size: 14px; }
+#checklist li.pending::before { content: '○'; position: absolute; left: 0; color: var(--gray); font-size: 18px; }
+#checklist li.passed { color: var(--green); font-weight: bold; }
+#checklist li.passed::before { content: '✅'; position: absolute; left: 0; }
 
-imageInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        imageToCrop.src = event.target.result;
-        imageToCrop.style.display = 'block';
-
-        // Initialize Cropper
-        if (cropper) cropper.destroy();
-        cropper = new Cropper(imageToCrop, {
-            aspectRatio: 1,
-            viewMode: 1,
-            ready() { runAIValidation(); }
-        });
-        document.getElementById('controls').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-});
-
-async function runAIValidation() {
-    validationResults.innerHTML = "Processing AI Check...";
-    
-    // Detect face, landmarks, and expressions
-    const detections = await faceapi.detectSingleFace(imageToCrop, new faceapi.TinyFaceDetectorOptions())
-                                    .withFaceLandmarks()
-                                    .withFaceExpressions();
-
-    if (!detections) {
-        validationResults.innerHTML = "<span class='invalid'>❌ No face detected. Please center your face.</span>";
-        return;
-    }
-
-    const expr = detections.expressions;
-    const isNeutral = expr.neutral > 0.5;
-    
-    validationResults.innerHTML = `
-        <div class="${isNeutral ? 'valid' : 'invalid'}">${isNeutral ? '✅ Expression: Neutral' : '❌ Expression: Avoid smiling/frowning'}</div>
-        <div class="valid">✅ Face Detected</div>
-        <div class="valid">✅ Lighting: OK</div>
-    `;
-}
-
-document.getElementById('generateBtn').addEventListener('click', () => {
-    // 1. Get High-Res Square Crop
-    const croppedCanvas = cropper.getCroppedCanvas({
-        width: PHOTO_SIZE,
-        height: PHOTO_SIZE,
-        imageSmoothingQuality: 'high'
-    });
-
-    // 2. Create 4x6 Sheet (1800x1200 px)
-    const printCanvas = document.createElement('canvas');
-    printCanvas.width = SHEET_W;
-    printCanvas.height = SHEET_H;
-    const ctx = printCanvas.getContext('2d');
-
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, SHEET_W, SHEET_H);
-
-    // Place 4 photos with cutting margins
-    const marginX = (SHEET_W - (PHOTO_SIZE * 2)) / 2;
-    const marginY = (SHEET_H - (PHOTO_SIZE * 2)) / 2;
-
-    const positions = [
-        { x: marginX, y: marginY },
-        { x: marginX + PHOTO_SIZE, y: marginY },
-        { x: marginX, y: marginY + PHOTO_SIZE },
-        { x: marginX + PHOTO_SIZE, y: marginY + PHOTO_SIZE }
-    ];
-
-    positions.forEach(pos => {
-        ctx.drawImage(croppedCanvas, pos.x, pos.y, PHOTO_SIZE, PHOTO_SIZE);
-        // Fine dashed line for cutting
-        ctx.strokeStyle = "#ccc";
-        ctx.setLineDash([10, 10]);
-        ctx.strokeRect(pos.x, pos.y, PHOTO_SIZE, PHOTO_SIZE);
-    });
-
-    // 3. High-Quality Download
-    const link = document.createElement('a');
-    link.download = 'US_Passport_Print_Sheet_300DPI.jpg';
-    link.href = printCanvas.toDataURL('image/jpeg', 1.0);
-    link.click();
-});
+.btn-main, .btn-download { background: var(--navy); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; }
+.btn-download { background: var(--green); font-size: 18px; }
+.btn-download:disabled { background: #ccc; cursor: not-allowed; }
+.specs-text { font-size: 11px; text-align: center; color: var(--gray); margin-top: 8px; }
