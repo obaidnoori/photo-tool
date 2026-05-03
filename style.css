@@ -1,40 +1,32 @@
-:root { --navy: #002868; --red: #bf0a30; --green: #28a745; --gray: #6c757d; }
-body { font-family: 'Inter', system-ui, sans-serif; background: #f0f4f8; margin: 0; color: #333; }
-.app-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 3px solid var(--navy); }
-.logo { font-size: 24px; font-weight: 800; color: var(--navy); }
-.logo span { font-weight: 300; font-size: 14px; color: var(--red); }
-.status-pill { background: #ffeeba; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-
-.main-content { display: grid; grid-template-columns: 1fr 360px; gap: 30px; margin-top: 25px; }
-.cropper-container { background: #222; border-radius: 12px; height: 450px; overflow: hidden; margin: 20px 0; }
-.cvs-preview-area { background: white; padding: 20px; border-radius: 12px; border: 1px solid #ddd; }
-.canvas-frame { background: #eee; padding: 10px; border-radius: 8px; text-align: center; }
-#cvsPreview { max-width: 100%; height: auto; border: 1px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-
-.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-#checklist li { list-style: none; padding: 12px 0 12px 35px; border-bottom: 1px solid #f0f0f0; position: relative; font-size: 14px; }
-#checklist li.pending::before { content: '○'; position: absolute; left: 0; color: var(--gray); font-size: 18px; }
-#checklist li.passed { color: var(--green); font-weight: bold; }
-#checklist li.passed::before { content: '✅'; position: absolute; left: 0; }
-
-.btn-main, .btn-download { background: var(--navy); color: white; border: none; padding: 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; }
-.btn-download { background: var(--green); font-size: 18px; }
-.btn-download:disabled { background: #ccc; cursor: not-allowed; }
-.specs-text { font-size: 11px; text-align: center; color: var(--gray); margin-top: 8px; }
-#imageInput {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
+:root {
+    --primary: #2563eb;
+    --success: #16a34a;
+    --error: #dc2626;
+    --bg: #f8fafc;
 }
-.btn-main {
-    display: block;
-    cursor: pointer;
-    background: #002868;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    border-radius: 8px;
-    font-weight: bold;
-}
+
+body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+.editor-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; margin-top: 20px; }
+
+.card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+
+.cropper-container { min-height: 400px; background: #eee; border-radius: 8px; overflow: hidden; margin-top: 15px; }
+
+canvas { width: 100%; height: auto; border: 1px solid #ddd; margin-bottom: 10px; }
+
+/* Checklist Styles */
+#checklist { list-style: none; padding: 0; }
+#checklist li { padding: 8px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+#checklist li::before { content: '○'; margin-right: 10px; font-weight: bold; }
+#checklist li.pass { color: var(--success); }
+#checklist li.pass::before { content: '✓'; }
+#checklist li.fail { color: var(--error); }
+#checklist li.fail::before { content: '✕'; }
+
+.hint { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+.btn-primary, .btn-success { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-success:disabled { background: #cbd5e1; cursor: not-allowed; }
