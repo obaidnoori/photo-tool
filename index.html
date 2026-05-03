@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USCIS Passport AI - Strict Validator</title>
+    <title>USCIS Passport AI - Full Suite</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Passport AI Validator</h1>
-            <div id="aiStatus" class="status-pill">Initializing AI...</div>
+            <h1>Passport AI Assistant</h1>
+            <div id="aiStatus" class="status-pill">Initializing AI Models...</div>
         </header>
 
         <main class="editor-grid">
@@ -19,12 +19,13 @@
                 <div class="actions">
                     <input type="file" id="imageInput" accept="image/*" hidden>
                     <button class="btn-primary" onclick="document.getElementById('imageInput').click()">Upload Photo</button>
-                    <button class="btn-secondary" id="zoomIn">＋</button>
-                    <button class="btn-secondary" id="zoomOut">－</button>
+                    <button class="btn-secondary" id="zoomIn">＋ Zoom</button>
+                    <button class="btn-secondary" id="zoomOut">－ Zoom</button>
                 </div>
                 
                 <div class="cropper-container">
                     <img id="imagePreview">
+                    <!-- Visual Stencil Overlay -->
                     <div id="guideOverlay" class="guide-overlay">
                         <div class="head-stencil"></div>
                     </div>
@@ -32,26 +33,39 @@
             </section>
 
             <aside class="sidebar">
-                <div class="card checklist-card">
-                    <h3>Compliance Checklist</h3>
-                    <ul id="checklist">
-                        <li id="check-face" class="pending">Looking Straight Ahead</li>
-                        <li id="check-ratio" class="pending">Proper Head Size</li>
-                        <li id="check-color" class="pending">Full Color Photo</li>
-                        <li id="check-bg" class="pending">White Background</li>
-                    </ul>
-                    <p class="disclaimer">Download is disabled until all items are ✅</p>
+                <!-- Exceptions Section -->
+                <div class="card settings-card">
+                    <h3>Special Requirements</h3>
+                    <div class="toggle-row">
+                        <label><input type="checkbox" id="isInfant"> Infant / Child (Under 2)</label>
+                    </div>
+                    <div class="toggle-row">
+                        <label><input type="checkbox" id="isReligious"> Religious Attire / Headgear</label>
+                    </div>
                 </div>
 
+                <!-- AI Checklist -->
+                <div class="card checklist-card">
+                    <h3>USCIS Compliance</h3>
+                    <ul id="checklist">
+                        <li id="check-face" class="pending">Looking Straight Ahead</li>
+                        <li id="check-ratio" class="pending">Head Size (50-69%)</li>
+                        <li id="check-color" class="pending">Color Photo (No B&W)</li>
+                        <li id="check-bg" class="pending">White Background</li>
+                    </ul>
+                </div>
+
+                <!-- Print Preview -->
                 <div class="card preview-card">
-                    <h3>4x6 Print Sheet</h3>
+                    <h3>4x6 Print Sheet Preview</h3>
                     <canvas id="cvsPreview"></canvas>
-                    <button id="downloadBtn" class="btn-success" disabled>Download Ready Sheet</button>
+                    <button id="downloadBtn" class="btn-success" disabled>Download 4x6 Sheet</button>
                 </div>
             </aside>
         </main>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="script.js"></script>
