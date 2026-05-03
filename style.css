@@ -22,3 +22,19 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 .btn-download { background: var(--green); font-size: 18px; }
 .btn-download:disabled { background: #ccc; cursor: not-allowed; }
 .specs-text { font-size: 11px; text-align: center; color: var(--gray); margin-top: 8px; }
+#imageInput {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+.btn-main {
+    display: block;
+    cursor: pointer;
+    background: #002868;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+}
