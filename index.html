@@ -3,31 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open Source Passport Photo Tool</title>
+    <title>AI Passport Photo Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h2>US Passport Photo Creator</h2>
-        <p>4x6 Standard Print (6 Photos per sheet)</p>
-        
+        <h1>US Passport Photo AI</h1>
+        <div id="aiStatus" class="status-box">Loading AI Models...</div>
+
         <div class="upload-section">
-            <input type="file" id="imageInput" accept="image/*">
-            <label for="imageInput" class="btn">Select Your Photo</label>
+            <input type="file" id="imageInput" accept="image/*" disabled>
+            <label for="imageInput" class="btn">Upload Photo</label>
         </div>
 
-        <div class="preview-container">
-            <canvas id="editorCanvas"></canvas>
-            <div id="overlay" class="passport-guide"></div>
+        <div id="validationResults" class="validation-grid"></div>
+
+        <div class="editor-wrap">
+            <img id="imageToCrop" style="display:none;">
         </div>
 
-        <div class="controls">
-            <button id="generateBtn" class="btn primary">Generate 4x6 Print Sheet</button>
+        <div class="controls" id="controls" style="display:none;">
+            <button id="generateBtn" class="btn primary">Generate 300 DPI Print Sheet</button>
         </div>
-        
-        <p class="privacy-note">Privacy: All processing happens in your browser. No data is sent to our servers.</p>
+
+        <div class="requirements-list">
+            <h4>USCIS Requirements Check:</h4>
+            <ul>
+                <li>2x2 inches (51x51mm)</li>
+                <li>White/Off-white background</li>
+                <li>Neutral expression (No "awkward" faces)</li>
+                <li>Eyes open and visible</li>
+                <li>No glasses or headgear</li>
+            </ul>
+        </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- Face API Library -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
